@@ -57,14 +57,13 @@
     </div>
     <div style="background-color: #6c757d">
       <b-collapse id="collapse-1">
-        <!-- class="mt-2" -->
         <br>
         <b-container>
           <b-card>
             <template>
               <div>
                 <b-card class="mt-3" header="New Post">
-                  <b-form method="post" v-on:submit.prevent="test">
+                  <b-form method="post" v-on:submit.prevent="create">
                     <b-form-group label="Title:" description="Masukkan judul" required>
                       <b-form-input v-model="title"></b-form-input>
                     </b-form-group>
@@ -72,7 +71,7 @@
                       Content:
                       <b-form-textarea label="Content: " v-model="content"></b-form-textarea>
                     </b-form-group>
-                    <b-button type="submit" variant="primary">Submit</b-button>
+                    <b-button v-b-toggle.collapse-1 type="submit" variant="primary">Submit</b-button>
                   </b-form>
                 </b-card>
               </div>
@@ -95,11 +94,11 @@
         <template v-for="(item, index) in filteredList">
           <div class="isi">
             <b-list-group style="padding: 10px 200px; text-align: center">
-              <b-list-group-item href="/" variant="dark">{{item. title}}</b-list-group-item>
+              <b-list-group-item v-model="titleEdit" href="/" variant="dark">{{item.title}}</b-list-group-item>
             </b-list-group>
-            <b-button v-b-modal.modal-1 style="margin: 0 0 10px 20px;" variant="dark" v-b-tooltip.hover.right="'Edit'">
+            <b-button v-b-modal.modal-1 v-model="contentEdit" style="margin: 0 0 10px 20px;" variant="dark" v-b-tooltip.hover.right="'Edit'" v-on:click="test(item._id)">
               Edit</b-button> <!--  v-bind:href="index+1" -->
-            <div class="isiKonten">{{item.content}}</div> <!-- style="text-align: justify; padding: 20px;" -->
+            <!-- <div class="isiKonten">{{item.content}}</div>  --><!-- style="text-align: justify; padding: 20px;" -->
           </div>
         </template>
       </div>

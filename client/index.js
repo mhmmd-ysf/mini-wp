@@ -3,8 +3,6 @@ let url = 'http://localhost:3000'
 new Vue({
   el: '#app',
   data: {
-    lirik: 'lirik',
-    message: 'ey',
     articles: [],
     isShown: true,
     title: '',
@@ -25,19 +23,23 @@ new Vue({
       })
   },
   computed: {
+    searchComputed() {
+      this.search
+    },
     validation() {
       return this.title.length > 4 && this.title.length < 13
     },
-    filteredList() {
-      let filtered = this.articles.filter(post => {
-        return post.title.toLowerCase().includes(this.search.toLowerCase()) ||post.content.toLowerCase().includes(this.search.toLowerCase())
+    filteredList: function() {
+      let filter = this.articles.filter(post => {
+        return post.title.toLowerCase().includes(this.search.toLowerCase()) || post.content.toLowerCase().includes(this.search.toLowerCase())
       })
-      if(filtered.length > 5) {filtered.length = 5}
-      return filtered
+      filter = filter.sort((a,b) => {a.title > b.title})
+      if(filter.length > 5) {filter.length = 5}
+      return filter
     }
   },
   methods: {
-    test() {
+    create() {
       let obj = {
         title: this.title,
         content: this.content,
@@ -45,19 +47,32 @@ new Vue({
       }
       axios.post(url + '/articles', obj)
         .then(({data}) => {
-          let sorted = data.sort((a,b) => {
-            return b.modified - a.mmodified
-          })
-          this.articles = sorted
+          this.articles.unshift(data)
+          this.title = ''
+          this.content = ''
         })
         .catch(error => {
           console.log(error)
         })
+    },
+    test(input) {
+      console.log('masuk')
+      console.log(input)
+      axios.get(url + `/articles/${input}`)
+      .then(({data}) => {
+        console.log(data)
+        this.titleEdit = data.title
+        this.contentEdit = data.content
+        console.log(this.titleEdit)
+        console.log(this.contentEdit)
+      })
+      .catch(err => {console.log(err)})
     }
   },
   watch: {
-    searches: function (input) {
-
+    filteredList(input) {
+      input = input.map(item => item.title)
+      console.log(input)
     }
   }
 })
