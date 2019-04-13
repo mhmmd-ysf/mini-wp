@@ -29,7 +29,7 @@ class ControllerArticle {
     Article.find()
       .then(data => {
         data = data.reverse()
-        console.log(data)
+        // console.log(data)
         res.status(200).json(data)
       })
       .catch(err => { res.status(500).json(err) })

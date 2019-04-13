@@ -5,7 +5,8 @@ const route = require('./routes/index')
 const mongoose = require('mongoose')
 const cors = require('cors')
 
-mongoose.connect('mongodb://localhost:27017/miniWP', {useNewUrlParser: true})
+let dbUrl = 'mongodb://localhost:27017/miniWP'
+mongoose.connect(dbUrl, {useNewUrlParser: true})
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))

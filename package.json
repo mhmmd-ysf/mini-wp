@@ -9,7 +9,6 @@
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.18",
     "cors": "^2.8.5",
-    "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "google-auth-library": "^3.1.2",
     "jquery": "^3.3.1",
@@ -18,7 +17,9 @@
     "sweetalert": "^2.1.2",
     "vue": "^2.6.10"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "dotenv": "^7.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

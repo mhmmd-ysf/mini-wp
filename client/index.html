@@ -12,137 +12,243 @@
     integrity="sha384-FKw7x8fCxuvzBwOJmhTJJsKzBl8dnN9e2R4+pXRfYoHivikuHkzWyhKWDSMcGNK8" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css"
     integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
-  <script src="//unpkg.com/@babel/polyfill@latest/dist/polyfill.min.js"></script>
-  <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
-  <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
   <div id="app">
-    <div>
-      <b-navbar toggleable="lg" type="dark" variant="dark">
-        <b-navbar-brand href="/">Mini Wordpress</b-navbar-brand>
+    <div v-if="page == 'home'">
+      <div>
+        <b-navbar toggleable="lg" type="dark" variant="dark">
+          <b-navbar-brand href="#">Mini Wordpress</b-navbar-brand>
 
-        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+          <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
-        <b-collapse id="nav-collapse" is-nav>
-          <b-navbar-nav>
-            <b-nav-item href="/">Link</b-nav-item>
-            <b-nav-item href="/" disabled>Disabled</b-nav-item>
-          </b-navbar-nav>
+          <b-collapse id="nav-collapse" is-nav>
+            <b-navbar-nav>
+              <b-nav-item href="#">Link</b-nav-item>
+              <b-nav-item href="#" disabled>Disabled</b-nav-item>
+            </b-navbar-nav>
 
-          <!-- Right aligned nav items -->
-          <b-navbar-nav class="ml-auto">
-            <!-- <b-button v-on:click="isShown = !isShown" style="margin-right: 10px" size="sm" class="my-2 my-sm-0">New Post</b-button> -->
-            <b-nav-form>
-              <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="search"></b-form-input>
-              <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
-            </b-nav-form>
-
-            <!-- Using 'button-content' slot -->
-            <!-- <b-nav-item-dropdown right>
-              <template slot="button-content"><em>User</em></template>
-              <b-dropdown-item href="#">Profile</b-dropdown-item>
-              <b-dropdown-item href="#">Sign Out</b-dropdown-item>
-            </b-nav-item-dropdown> -->
-            <b-button v-b-toggle.collapse-1 variant="primary" style="margin-left: 20px;">New Post</b-button>
-          </b-navbar-nav>
+            <!-- Right aligned nav items -->
+            <b-navbar-nav class="ml-auto">
+              <b-nav-form>
+                <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="search"></b-form-input>
+                <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+              </b-nav-form>
+              <b-button v-b-toggle.collapse-1 variant="primary" style="margin-left: 20px;">New Post</b-button>
+            </b-navbar-nav>
+          </b-collapse>
+        </b-navbar>
+      </div>
+      <div style="background-color: #6c757d">
+        <b-collapse id="collapse-1">
+          <br>
+          <b-container>
+            <b-card>
+              <template>
+                <div>
+                  <b-card class="mt-3" header="New Post">
+                    <b-form method="post" v-on:submit.prevent="create">
+                      <b-form-group label="Title:" description="Masukkan judul" required>
+                        <b-form-input v-model="title"></b-form-input>
+                      </b-form-group>
+                      <b-form-group>
+                        Content:
+                        <b-form-textarea label="Content: " v-model="content"></b-form-textarea>
+                      </b-form-group>
+                      <b-button v-b-toggle.collapse-1 type="submit" variant="primary">Submit</b-button>
+                    </b-form>
+                  </b-card>
+                </div>
+              </template>
+            </b-card> <br>
+          </b-container>
         </b-collapse>
-      </b-navbar>
-    </div>
-    <div style="background-color: #6c757d">
-      <b-collapse id="collapse-1">
-        <br>
-        <b-container>
-          <b-card>
-            <template>
-              <div>
-                <b-card class="mt-3" header="New Post">
-                  <b-form method="post" v-on:submit.prevent="create">
-                    <b-form-group label="Title:" description="Masukkan judul" required>
-                      <b-form-input v-model="title"></b-form-input>
-                    </b-form-group>
-                    <b-form-group>
-                      Content:
-                      <b-form-textarea label="Content: " v-model="content"></b-form-textarea>
-                    </b-form-group>
-                    <b-button v-b-toggle.collapse-1 type="submit" variant="primary">Submit</b-button>
-                  </b-form>
-                </b-card>
-              </div>
-            </template>
-          </b-card> <br>
-        </b-container>
-      </b-collapse>
-    </div>
-    <div class="kontainer">
-      <div class="side">
-        <b-list-group>
-          <b-list-group-item href="/">Home</b-list-group-item>
-          <b-list-group-item href="/">Profile</b-list-group-item>
-          <b-list-group-item href="/">Post</b-list-group-item>
-          <b-list-group-item href="/">Settings</b-list-group-item>
-          <b-list-group-item href="/">Sign Out</b-list-group-item>
-        </b-list-group>
       </div>
-      <div id="konten" v-if="isShown">
-        <template v-for="(item, index) in filteredList">
-          <div class="isi">
-            <b-list-group style="padding: 10px 200px; text-align: center">
-              <b-list-group-item v-model="titleEdit" href="/" variant="dark">{{item.title}}</b-list-group-item>
-            </b-list-group>
-            <b-button v-b-modal.modal-1 v-model="contentEdit" style="margin: 0 0 10px 20px;" variant="dark" v-b-tooltip.hover.right="'Edit'" v-on:click="test(item._id)">
-              Edit</b-button> <!--  v-bind:href="index+1" -->
-            <!-- <div class="isiKonten">{{item.content}}</div>  --><!-- style="text-align: justify; padding: 20px;" -->
-          </div>
-        </template>
-      </div>
-      <!-- <div id="postArticle" v-if="!isShown">
-        <form action="/" method="post">
-          <p>Title:</p>
-          <input type="text" name="title" id="">
-          <p>Content:</p>
-          <textarea rows="4" cols="50"></textarea>
-        </form>
-      </div> -->
-      <div class="footer">
-        <b-list-group>
-          <b-list-group-item href="/">Address</b-list-group-item>
-          <b-list-group-item href="/">Social Media</b-list-group-item>
-          <b-list-group-item href="/">Copyright</b-list-group-item>
-        </b-list-group>
-      </div>
-    </div>
-    <div>
-      <b-button v-b-modal.modal-center>Launch centered modal</b-button>
-      <!-- Modal Component -->
-      <b-modal id="modal-center" centered title="BootstrapVue">
-        <p class="my-4">Vertically centered modal!</p>
-      </b-modal>
-      <b-button v-b-modal.modal-1>Launch demo modal</b-button>
-      <!-- Modal Component -->
-      <b-modal id="modal-1" title="Edit Article">
-        <b-form-group label="Title:" description="Masukkan judul">
-          <b-form-input v-model="titleEdit" required></b-form-input>
-        </b-form-group>
-        <b-form-group>
-          Content:
-          <b-form-textarea label="content" v-model="contentEdit"></b-form-textarea>
-        </b-form-group>
-        <b-button variant="danger" onclick="confirm('Are you sure?')">Delete</b-button>
-        <!-- <div slot="modal-footer">
+
+
+
+      <div class="kontainer">
+        <div class="side">
+          <b-list-group style="cursor: pointer">
+            <b-list-group-item href="#">Home</b-list-group-item>
+            <b-list-group-item href="#">Profile</b-list-group-item>
+            <b-list-group-item href="#">Post</b-list-group-item>
+            <b-list-group-item href="#">Settings</b-list-group-item>
+            <b-list-group-item @click.prevent="logout" variant="danger">Sign Out</b-list-group-item>
+          </b-list-group>
+        </div>
+
+
+        <!-- <div id="konten">
+          <template v-for="(item, index) in filteredList">
+            <div class="isi">
+              <b-list-group v-b-modal.view style="padding: 10px 50px; text-align: center" v-on:click="view(item._id)">
+                <b-list-group-item v-model="titleEdit" variant="dark" style="cursor:pointer">{{item.title}}
+                </b-list-group-item>
+              </b-list-group>
+              <b-button v-b-modal.edit v-model="contentEdit" style="margin: 0 0 10px 20px;" variant="dark"
+                v-on:click="edit(item._id)">
+                Edit</b-button>
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#contentEdit"
+                v-on:click="view(item._id)">
+                View
+              </button>
+            </div>
+          </template>
         </div> -->
-        <div slot="modal-cancel">Cancel</div>
-        <div slot="modal-ok">OK</div>
-        </b-form>
-      </b-modal>
+
+
+        <div id="konten" class="list-group" style="background-color: #40474e; cursor: pointer">
+          <template v-for="(item, index) in filteredList">
+              <div class="list-group-item list-group-item-action" @click="view(item._id)">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">{{item.title}}</h5>
+                  <small>{{item.modified}}</small>
+                </div>
+                <!-- <p class="mb-1" style="text-align: justify; cursor: pointer;">{{item.content}}</p> -->
+                <!-- <small>Donec id elit non mi porta.</small> -->
+              </div>
+          </template>
+        </div>
+
+
+
+        <div class="footer">
+          <b-list-group>
+            <b-list-group-item href="#">Address</b-list-group-item>
+            <b-list-group-item href="#">Social Media</b-list-group-item>
+            <b-list-group-item href="#">Copyright</b-list-group-item>
+          </b-list-group>
+        </div>
+      </div>
+
+
+
+      <div>
+        <b-modal id="edit" title="Edit Article">
+          <b-form-group label="Title:" description="Masukkan judul">
+            <b-form-input v-model="titleEdit" required></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            Content:
+            <b-form-textarea label="content" v-model="contentEdit" rows="15"></b-form-textarea>
+          </b-form-group>
+          <div slot="modal-footer">
+            <b-button variant="danger" v-on:click="swalCancel">Delete</b-button>
+            <b-button class="btn btn-primary" type="submit">OK</b-button>
+            <b-button slot="modal-cancel" class="btn btn-secondary" type="button">Cancel</b-button>
+          </div>
+        </b-modal>
+
+
+        <b-modal id="view" title="View Article">
+          <b-form-group label="Title:">
+            <p>{{titleEdit}}</p>
+          </b-form-group>
+          <b-form-group>
+            Content:
+            <p>{{contentEdit}}</p>
+          </b-form-group>
+          <div slot="modal-footer">
+            <b-button v-b-modal.edit v-model="contentEdit" class="btn btn-primary" variant="dark"
+              v-on:click="edit(item._id)">Edit</b-button>
+            <b-button slot="modal-cancel" class="btn btn-danger" type="cancel" v-on:click="closeModal">Close</b-button>
+          </div>
+        </b-modal>
+
+
+        <div class="modal fade" id="contentEdit" tabindex="-1" role="dialog" aria-labelledby="contentEditLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="contentEditLabel">View Post</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <b-form-group label="Title:">
+                  <p>{{titleEdit}}</p>
+                </b-form-group>
+                <b-form-group>
+                  Content:
+                  <p>{{contentEdit}}</p>
+                </b-form-group>
+
+
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+    <div v-if="page === 'login'">
+      <b-jumbotron style="background-color: #e9ecef; height: 1000px;" header="Mini Wordpress"
+        lead="The difinition of writing.">
+        <div class="container text-center">
+          <div class="container my-4">
+            <div class="row justify-content-center">
+              <div class="col-4">
+                <div class="card mb-4">
+                  <div class="card-header text-center">Login</div>
+                  <div class="card-body">
+                    <form method="post">
+                      <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
+                          placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
+                        <small id="emailHelp" class="form-text text-muted">
+                          We'll never share your email with anyone else.
+                        </small>
+                      </div>
+                      <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="Password"
+                          v-model="loginPassword"> <!-- v-model="loginPassword" -->
+                      </div>
+                      <button type="submit" class="btn btn-primary" v-on:click.prevent="login">Submit</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+      </b-jumbotron>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <script src="//unpkg.com/@babel/polyfill@latest/dist/polyfill.min.js"></script>
+  <!-- <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script> -->
+  <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
   <script src="index.js"></script>
 </body>
 

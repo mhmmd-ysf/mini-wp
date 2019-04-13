@@ -1,28 +1,21 @@
 const { User } = require('../model')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
 const { OAuth2Client } = require('google-auth-library')
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+const { hash } = require('../helpers/bcrypt')
+const { sign } = require('../helpers/jwt')
+const { compare } = require('../helpers/bcrypt')
 
 class ControllerUser {
   static create(req, res) {
     let input = req.body
     let newUser = {
       name: input.name,
-      username: input.username,
-      password: bcrypt.hashSync(input.password, 10),
-      articles: []
+      email: input.email,
+      password: hash(input.password),
     }
     User.create(newUser)
-      .then(data => {
-        const token = jwt.sign({
-          name: data.name,
-          username: data.username,
-          id: data._id
-        }, process.env.JWT_SECRET)
-        res.status(201).json({ token })
-      })
-      .catch(err => res.status(500).json({ err }))
+      .then(data => res.status(201).json(data))
+      .catch(err => res.status(500).json(err))
   }
   static findAll(req, res) {
     User.find()
@@ -32,7 +25,7 @@ class ControllerUser {
       .catch(err => res.status(500).json({message: err.message}))
   }
   static update(req, res) {
-    req.body.password = bcrypt.hashSync(req.body.password, 10)
+    req.body.password = hash(req.body.password)
     User.findOneAndUpdate({_id: req.params.id}, req.body, { new: true })
     .then(user => {
       res.status(200).json(user)
@@ -58,28 +51,26 @@ class ControllerUser {
       .catch(err => {console.log('error'); res.status(500).json({message: err.message})})
   }
   static login(req, res) {
-    User.findOne({username: req.body.username})
+    User.findOne({email: req.body.email})
       .then(user => {
         console.log(user)
         if(user === null) {
           res.status(401).json({message: 'Invaild username/password'})
           return
         } else {
-          if (!bcrypt.compareSync(req.body.password, user.password)) {
+          if (!compare(req.body.password, user.password)) {
             res.status(401).json({message: 'Invalid username/password'})
           } else {
-            console.log('siap buat token')
-            const token = jwt.sign({
+            const token = sign({
               name: user.name,
-              username: user.username,
+              email: user.email,
               id: user._id
-            }, process.env.JWT_SECRET)
+            })
             req.headers.token = token
-            console.log('siap balikin token')
             res.status(200).json({
-              token,
+              token: token,
               name: user.name,
-              username: user.username,
+              email: user.email,
               id: user._id
             })
           }
@@ -103,18 +94,18 @@ class ControllerUser {
             return User.create({
               name: `${payload.given_name} ${payload.family_name}`,
               email: payload.email,
-              password: bcrypt.hashSync('12345', 10)
+              password: hash('12345')
             })
           } else {
             return Promise.resolve(user)
           }
         })
         .then(user => {
-          const token = jwt.sign({
+          const token = sign({
             name: user.name,
             email: user.email,
             id: data._id
-          }, process.env.JWT_SECRET)
+          })
           res.status(201).json({token})
         })
         .catch(err => res.status(500).json({message: err.message}))
