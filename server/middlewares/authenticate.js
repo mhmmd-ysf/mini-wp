@@ -1,7 +1,8 @@
-const jwt = require('jsonwebtoken')
+const { verify } = require('../helpers/jwt')
 function authenticate(req, res, next) {
   try {
-    let decoded = jwt.verify(req.headers.token, process.env.JWT_SECRET)
+    console.log('masuk authenticate')
+    let decoded = verify(req.headers.token)
     req.auth = decoded
     next()
   } catch {

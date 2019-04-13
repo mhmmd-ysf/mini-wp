@@ -2,8 +2,8 @@ const { User } = require('../model')
 const { OAuth2Client } = require('google-auth-library')
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 const { hash } = require('../helpers/bcrypt')
-const { sign } = require('../helpers/jwt')
 const { compare } = require('../helpers/bcrypt')
+const { sign } = require('../helpers/jwt')
 
 class ControllerUser {
   static create(req, res) {
@@ -53,7 +53,7 @@ class ControllerUser {
   static login(req, res) {
     User.findOne({email: req.body.email})
       .then(user => {
-        console.log(user)
+        // console.log(user)
         if(user === null) {
           res.status(401).json({message: 'Invaild username/password'})
           return

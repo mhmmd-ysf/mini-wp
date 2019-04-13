@@ -21,7 +21,7 @@
 
 <body>
   <div id="app">
-    <div v-if="page == 'home'">
+    <div v-if="isLoggedIn">
       <div>
         <b-navbar toggleable="lg" type="dark" variant="dark">
           <b-navbar-brand href="#">Mini Wordpress</b-navbar-brand>
@@ -29,9 +29,10 @@
           <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
           <b-collapse id="nav-collapse" is-nav>
+
             <b-navbar-nav>
-              <b-nav-item href="#">Link</b-nav-item>
-              <b-nav-item href="#" disabled>Disabled</b-nav-item>
+              <!-- <b-nav-item href="#">Link</b-nav-item> -->
+              <b-nav-item href="#" disabled>{{userName}}</b-nav-item>
             </b-navbar-nav>
 
             <!-- Right aligned nav items -->
@@ -79,51 +80,32 @@
             <b-list-group-item href="#">Home</b-list-group-item>
             <b-list-group-item href="#">Profile</b-list-group-item>
             <b-list-group-item href="#">Post</b-list-group-item>
-            <b-list-group-item href="#">Settings</b-list-group-item>
+            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Settings</b-list-group-item>
             <b-list-group-item @click.prevent="logout" variant="danger">Sign Out</b-list-group-item>
           </b-list-group>
         </div>
 
-
-        <!-- <div id="konten">
+        <div id="konten" class="list-group">
           <template v-for="(item, index) in filteredList">
-            <div class="isi">
-              <b-list-group v-b-modal.view style="padding: 10px 50px; text-align: center" v-on:click="view(item._id)">
-                <b-list-group-item v-model="titleEdit" variant="dark" style="cursor:pointer">{{item.title}}
-                </b-list-group-item>
-              </b-list-group>
-              <b-button v-b-modal.edit v-model="contentEdit" style="margin: 0 0 10px 20px;" variant="dark"
-                v-on:click="edit(item._id)">
-                Edit</b-button>
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#contentEdit"
-                v-on:click="view(item._id)">
-                View
-              </button>
-            </div>
-          </template>
-        </div> -->
-
-
-        <div id="konten" class="list-group" style="background-color: #40474e; cursor: pointer">
-          <template v-for="(item, index) in filteredList">
-              <div class="list-group-item list-group-item-action" @click="view(item._id)">
-                <div class="d-flex w-100 justify-content-between">
-                  <h5 class="mb-1">{{item.title}}</h5>
-                  <small>{{item.modified}}</small>
-                </div>
-                <!-- <p class="mb-1" style="text-align: justify; cursor: pointer;">{{item.content}}</p> -->
-                <!-- <small>Donec id elit non mi porta.</small> -->
+            <div class="list-group-item list-group-item-action" data-toggle="modal" data-target="#contentView"
+              @click="view(item._id)">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{item.title}}</h5>
+                <small>{{item.modified}}</small>
               </div>
+              <!-- <p class="mb-1" style="text-align: justify; cursor: pointer;">{{item.content}}</p> -->
+              <small>{{item.authorName}}</small>
+            </div>
           </template>
         </div>
 
 
 
         <div class="footer">
-          <b-list-group>
-            <b-list-group-item href="#">Address</b-list-group-item>
-            <b-list-group-item href="#">Social Media</b-list-group-item>
-            <b-list-group-item href="#">Copyright</b-list-group-item>
+          <b-list-group style="cursor: pointer">
+            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Address</b-list-group-item>
+            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Social Media</b-list-group-item>
+            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Copyright</b-list-group-item>
           </b-list-group>
         </div>
       </div>
@@ -131,38 +113,31 @@
 
 
       <div>
-        <b-modal id="edit" title="Edit Article">
-          <b-form-group label="Title:" description="Masukkan judul">
-            <b-form-input v-model="titleEdit" required></b-form-input>
-          </b-form-group>
-          <b-form-group>
-            Content:
-            <b-form-textarea label="content" v-model="contentEdit" rows="15"></b-form-textarea>
-          </b-form-group>
-          <div slot="modal-footer">
-            <b-button variant="danger" v-on:click="swalCancel">Delete</b-button>
-            <b-button class="btn btn-primary" type="submit">OK</b-button>
-            <b-button slot="modal-cancel" class="btn btn-secondary" type="button">Cancel</b-button>
+
+        <!-- View modal -->
+        <div class="modal fade" id="contentView" tabindex="-1" role="dialog" aria-labelledby="contentViewLabel"
+          aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="contentViewLabel">{{titleEdit}}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                  <p>{{contentEdit}}</p>
+              </div>
+              <div class="modal-footer">
+                <b-button data-toggle="modal" data-target="#contentEdit" class="btn btn-primary"
+                  variant="dark" @click.prevent="view2(articleId)">Edit</b-button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
           </div>
-        </b-modal>
+        </div>
 
-
-        <b-modal id="view" title="View Article">
-          <b-form-group label="Title:">
-            <p>{{titleEdit}}</p>
-          </b-form-group>
-          <b-form-group>
-            Content:
-            <p>{{contentEdit}}</p>
-          </b-form-group>
-          <div slot="modal-footer">
-            <b-button v-b-modal.edit v-model="contentEdit" class="btn btn-primary" variant="dark"
-              v-on:click="edit(item._id)">Edit</b-button>
-            <b-button slot="modal-cancel" class="btn btn-danger" type="cancel" v-on:click="closeModal">Close</b-button>
-          </div>
-        </b-modal>
-
-
+        <!-- Edit modal -->
         <div class="modal fade" id="contentEdit" tabindex="-1" role="dialog" aria-labelledby="contentEditLabel"
           aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -174,20 +149,18 @@
                 </button>
               </div>
               <div class="modal-body">
-                <b-form-group label="Title:">
-                  <p>{{titleEdit}}</p>
+                <b-form-group label="Title:" description="Masukkan judul">
+                  <b-form-input v-model="titleEdit" required></b-form-input>
                 </b-form-group>
                 <b-form-group>
                   Content:
-                  <p>{{contentEdit}}</p>
+                  <b-form-textarea label="content" v-model="contentEdit" rows="15"></b-form-textarea>
                 </b-form-group>
-
-
-
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                <b-button variant="danger" v-on:click="swalDelete(articleId)">Delete</b-button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" @click="edit(articleId)">Save changes</button>
               </div>
             </div>
           </div>
@@ -196,41 +169,70 @@
 
       </div>
     </div>
-    <div v-if="page === 'login'">
-      <b-jumbotron style="background-color: #e9ecef; height: 1000px;" header="Mini Wordpress"
-        lead="The difinition of writing.">
-        <div class="container text-center">
-          <div class="container my-4">
-            <div class="row justify-content-center">
-              <div class="col-4">
-                <div class="card mb-4">
-                  <div class="card-header text-center">Login</div>
-                  <div class="card-body">
-                    <form method="post">
-                      <div class="form-group">
-                        <label for="email">Email address</label>
-                        <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
-                          placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
-                        <small id="emailHelp" class="form-text text-muted">
-                          We'll never share your email with anyone else.
-                        </small>
-                      </div>
-                      <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password" placeholder="Password"
-                          v-model="loginPassword"> <!-- v-model="loginPassword" -->
-                      </div>
-                      <button type="submit" class="btn btn-primary" v-on:click.prevent="login">Submit</button>
-                    </form>
+    <div v-if="!isLoggedIn" style="display:flex; justify-content: center;">
+      <div class="col-9">
+        <b-jumbotron style="background-color: #e9ecef;margin-top: 30px;" header="Mini Wordpress" lead="The difinition of writing.">
+          <div class="container text-center">
+            <div class="container my-4">
+              <div class="row" style="display:flex; justify-content: center;">
+
+                  <div class="card mb-4" v-if="page == 'login' || (!isLoggedIn && page != 'register')">
+                    <div class="card-header text-center">Login</div>
+                    <div class="card-body">
+                      <form method="post">
+                        <div class="form-group">
+                          <label for="email">Email address</label>
+                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
+                            placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
+                          <small id="emailHelp" class="form-text text-muted">
+                            We'll never share your email with anyone else.
+                          </small>
+                        </div>
+                        <div class="form-group">
+                          <label for="password">Password</label>
+                          <input type="password" class="form-control" id="password" placeholder="Password"
+                            v-model="loginPassword"> <!-- v-model="loginPassword" -->
+                        </div>
+                        <button type="submit" class="btn btn-primary" v-on:click.prevent="login">Submit</button>
+                        <button type="submit" class="btn btn-primary"
+                          v-on:click.prevent="page ='register'">register</button>
+                      </form>
+                    </div>
                   </div>
-                </div>
+
+                  <div class="card mb-4" v-if="page == 'register' || (!isLoggedIn && page != 'login')">
+                    <div class="card-header text-center">Register</div>
+                    <div class="card-body">
+                      <form method="post">
+                        <div class="form-group">
+                          <label for="name">Full Name</label>
+                          <input type="name" class="form-control" id="name" aria-describedby="nameHelp"
+                            placeholder="Enter name" v-model="userName"> <!-- v-model="loginEmail" -->
+                        </div>
+                        <div class="form-group">
+                          <label for="email">Email address</label>
+                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
+                            placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
+                          <small id="emailHelp" class="form-text text-muted">
+                            We'll never share your email with anyone else.
+                          </small>
+                        </div>
+                        <div class="form-group">
+                          <label for="password">Password</label>
+                          <input type="password" class="form-control" id="password" placeholder="Password"
+                            v-model="loginPassword"> <!-- v-model="loginPassword" -->
+                        </div>
+                        <button type="submit" class="btn btn-primary" v-on:click.prevent="register">Submit</button>
+                        <button type="submit" class="btn btn-primary" v-on:click.prevent="page ='login'">Login</button>
+                      </form>
+                    </div>
+                  </div>
+
               </div>
             </div>
           </div>
-
-
-        </div>
-      </b-jumbotron>
+        </b-jumbotron>
+      </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>

@@ -3,7 +3,8 @@
   margin: 0;
 }
 
-body {
+html, body {
+  background-color: #40474e;
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   height: 100%;
 }
@@ -28,7 +29,10 @@ body {
 
 #konten {
   width: 60%;
-  background-color: #6c757d;
+  background-color: #40474e;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .footer {

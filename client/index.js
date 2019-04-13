@@ -7,20 +7,28 @@ new Vue({
   ],
   data: {
     articles: [],
-    page: 'home',
+    page: 'login',
+    isLoggedIn: false,
+    isViewing: false,
     title: '',
     content: '',
     search: '',
     titleEdit: '',
     contentEdit: '',
+    articleId: '',
     loginEmail: '',
-    loginPassword: ''
+    loginPassword: '',
+    userName: ''
   },
   created() {
     // console.log('masuk')
     axios.get(url + "/articles")
       .then(({ data }) => {
-        // console.log(data)
+        data = data.map(item => {
+          item.modified = item.modified.substring(0, 19).split('T').join(' ')
+          return item
+        })
+        console.log(data)
         this.articles = data
       })
       .catch(error => {
@@ -45,6 +53,7 @@ new Vue({
   },
   methods: {
     create() {
+      axios.defaults.headers.common['Token'] = window.localStorage.token
       let obj = {
         title: this.title,
         content: this.content,
@@ -52,6 +61,7 @@ new Vue({
       }
       axios.post(url + '/articles', obj)
         .then(({ data }) => {
+          data.modified = data.modified.substring(0, 19).split('T').join(' ')
           this.articles.unshift(data)
           this.title = ''
           this.content = ''
@@ -61,18 +71,52 @@ new Vue({
         })
     },
     edit(input) {
-      axios.get(url + `/articles/${input}`)
+      axios.defaults.headers.common['Token'] = window.localStorage.token
+      let obj = {
+        title: this.titleEdit,
+        content: this.contentEdit
+      }
+      axios.put(url + `/articles/${input}`, obj)
         .then(({ data }) => {
-          this.titleEdit = data.title
-          this.contentEdit = data.content
+          // console.log(data)
+          data.modified = data.modified.substring(0, 19).split('T').join(' ')
+          this.articles = this.articles.map(item => {
+            if(item._id === data._id) {
+              item = data
+            }
+            return item
+          })
+          this.titleEdit = ''
+          this.contentEdit = ''
+          $('#contentEdit').modal('hide')
+          $('#contentView').modal('hide')
         })
         .catch(err => { console.log(err) })
     },
     view(input) {
+      this.isViewing = true
+      this.articleId = input
       axios.get(url + `/articles/${input}`)
         .then(({ data }) => {
-          this.titleEdit = data.title
-          this.contentEdit = data.content
+            this.titleEdit = data.title
+            this.contentEdit = data.content
+        })
+        .catch(err => { console.log(err) })
+    },
+    view2(input) {
+      this.articleId = input
+      axios.get(url + `/articles/${input}`)
+        .then(({ data }) => {
+          if(data.authorId !== window.localStorage.id) {
+            return swal('Error: 401 Unauthorized!', `You can only edit your own article.`, 'error')
+          } else {
+            this.titleEdit = data.title
+            this.contentEdit = data.content
+          }
+        })
+        .then(cancel => {
+          $('#contentEdit').modal('hide')
+          $('#contentView').modal('hide')
         })
         .catch(err => { console.log(err) })
     },
@@ -81,52 +125,81 @@ new Vue({
         email: this.loginEmail,
         password: this.loginPassword
       }
-      console.log(obj)
       axios.post(url + '/login', obj)
         .then(({ data }) => {
-          console.log(data)
           window.localStorage.setItem('token', data.token)
           window.localStorage.setItem('name', data.name)
           window.localStorage.setItem('email', data.email)
           window.localStorage.setItem('id', data.id)
           this.loginEmail = ''
           this.loginPassword = ''
-          swal('berhasil masuk')
+          this.userName = data.name
+          this.isLoggedIn = true
+          swal(`Selamat datang ${data.name}!`, ' ', 'success')
           this.page = 'home'
         })
         .catch(err => { console.log(err); swal(err.message) })
     },
     logout: function () {
+      this.loginEmail = ''
+      this.loginPassword = ''
+      this.userName = ''
       window.localStorage.removeItem('token')
       window.localStorage.removeItem('name')
       window.localStorage.removeItem('email')
       window.localStorage.removeItem('id')
-      swal('berhasil keluar')
+      swal('Berhasil keluar')
+      this.isLoggedIn = false
       this.page = 'login'
     },
-    swalCancel: function () {
+    swalDelete: function (id) {
       swal({
         title: "Are you sure?",
-        text: "Once deleted, you will not be able to recover this imaginary file!",
+        text: "Once deleted, you will not be able to recover this article!",
         icon: "warning",
         buttons: true,
         dangerMode: true,
       })
         .then((willDelete) => {
           if (willDelete) {
-            swal("Poof! Your imaginary file has been deleted!", {
+            this.deleteArticle(id)
+            swal("Poof! Your article has been deleted!", {
               icon: "success",
             });
           } else {
-            swal("Your imaginary file is safe!");
+            swal("Your article is safe!")
           }
         })
     },
-    closeModal() {
-      this.$nextTick(() => {
-        // Wrapped in $nextTick to ensure DOM is rendered before closing
-        this.$refs.modal.hide()
-      })
+    deleteArticle: function (input) {
+      console.log(input)
+      console.log(`${url}/${input}`)
+      axios.delete(`${url}/articles/${input}`)
+        .then(done => {
+          this.articles = this.articles.filter(item => {
+            return item._id !== input
+          })
+          $('#contentEdit').modal('hide')
+          $('#contentView').modal('hide')
+          this.page = 'home'
+        })
+        .catch(err => swal(err.message))
+    },
+    register: function () {
+      let userObj = {
+        name: this.userName,
+        email: this.loginEmail,
+        password: this.loginPassword
+      }
+      axios.post(url + '/register', userObj)
+        .then(({ data }) => {
+          console.log('data')
+          // console.log(data)
+          this.loginEmail = ''
+          this.loginPassword = ''
+          swal('Berhasil register')
+          this.page = 'login'
+        })
     }
   },
   watch: {

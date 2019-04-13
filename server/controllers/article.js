@@ -1,54 +1,65 @@
 const { Article } = require('../model')
 const { User } = require('../model')
+const { verify } = require('../helpers/jwt')
 
 class ControllerArticle {
   static create(req, res) {
     let input = req.body
-    // console.log('masuk')
-    // console.log(input)
+    let user = req.auth
+    // console.log(user)
     let newArticle = {
       title: input.title,
       content: input.content,
-      modified: new Date()
+      modified: new Date(),
+      authorId: user.id,
+      authorName: user.name,
+      featuredImg: ''
     }
     Article.create(newArticle)
       .then(data => {
-        // console.log(data)
-        // user.articles.push(data._id)
-        // user.save()
         res.status(201).json(data)
       })
       .catch(err => { res.status(500).json(err) })
-    // User.findOne({ _id: input.id })
-      // .then(user => {
-      //   newArticle.userId = user._id
-      // })
-      // .catch(err => { res.status(401).json({ message: err.message }) })
   }
   static findAll(req, res) {
     Article.find()
       .then(data => {
-        data = data.reverse()
+        // data = data.reverse()
+        data = data.sort((a, b) => {
+          if (a.modified > b.modified) {
+            return -1
+          } else if (a.modified < b.modified) {
+            return 1
+          } else return 0
+        })
         // console.log(data)
         res.status(200).json(data)
       })
       .catch(err => { res.status(500).json(err) })
   }
   static findOne(req, res) {
-    Article.find({_id: req.params.id})
-      .then(data => {res.status(200).json(data)})
-      .catch(err => {res.status(500).json(err)})
+    console.log('masuk findone server')
+    Article.findOne({ _id: req.params.id })
+      .then(data => { res.status(200).json(data) })
+      .catch(err => { res.status(500).json(err) })
   }
   static update(req, res) {
-    // delete req.body._id
-    // req.body.checkStatus = (req.body.checkStatus === 'true') ? true : false
-    req.body.modified = new Date()
-    Article.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true })
+    console.log('masuk update article server')
+    req.body.authorId = req.auth.id
+    req.body.authorName = req.auth.name
+    Article.updateOne({ _id: req.params.id }, req.body, { new: true })
+      .then(article => {
+        if (!article) {
+          res.status(500).json(err)
+        } else {
+          return Article.findOne({_id: req.params.id})
+        }
+      })
       .then(article => {
         res.status(200).json(article)
       })
       .catch(err => {
-        console.log(err)
+        // console.log(err)
         res.status(500).json(err)
       })
   }
