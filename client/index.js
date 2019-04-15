@@ -123,20 +123,18 @@ const vue = new Vue({
     }
   },
   methods: {
-    processFile(name, file) {
-      let tes = event.target.files[0]
-
-      console.log('tes')
-      console.log(tes)
-      console.log('name')
-      console.log(name)
+    processFile() {
+      let file = event.target.files[0]
       console.log('file')
       console.log(file)
-
+      
       // this.file
       return tes
     },
     create(event) {
+      let file = event.target.files[0]
+      console.log('file')
+      console.log(file)
       axios.defaults.headers.common['Token'] = window.localStorage.token
       let obj = {
         title: this.title,
