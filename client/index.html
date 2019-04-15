@@ -17,6 +17,9 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="/vueWysiwyg.css">
+  <meta name="google-signin-client_id"
+    content="1060952704466-celcs1f05mfh6msgcrcchoslbhpnaugc.apps.googleusercontent.com">
 </head>
 
 <body>
@@ -24,7 +27,7 @@
     <div v-if="isLoggedIn">
       <div>
         <b-navbar toggleable="lg" type="dark" variant="dark">
-          <b-navbar-brand href="#">Mini Wordpress</b-navbar-brand>
+          <b-navbar-brand @click="page = 'home'">Mini Wordpress</b-navbar-brand>
 
           <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -54,13 +57,29 @@
               <template>
                 <div>
                   <b-card class="mt-3" header="New Post">
-                    <b-form method="post" v-on:submit.prevent="create">
+                    <b-form method="post" accept="image/*" enctype="multipart/form-data" v-on:submit.prevent="create" enctype="multipart/form-data">
                       <b-form-group label="Title:" description="Masukkan judul" required>
                         <b-form-input v-model="title"></b-form-input>
                       </b-form-group>
                       <b-form-group>
                         Content:
-                        <b-form-textarea label="Content: " v-model="content"></b-form-textarea>
+                        <!-- <b-form-textarea label="Content: " v-model="content"></b-form-textarea> -->
+                        <wysiwyg v-model="content" label="content" style="overflow: scroll; height: 300px;"></wysiwyg>
+                      </b-form-group>
+                      <b-form-group>
+                        Select a file: <br>
+                        <input type="file" @change="processFile($event.target.name, $event.target.files)">
+
+                        <!-- <div class="input-group mb-3">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">Upload</span>
+                          </div>
+                          <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="inputGroupFile01">
+                            <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+                          </div>
+                        </div> -->
+
                       </b-form-group>
                       <b-button v-b-toggle.collapse-1 type="submit" variant="primary">Submit</b-button>
                     </b-form>
@@ -72,20 +91,11 @@
         </b-collapse>
       </div>
 
-
-
       <div class="kontainer">
-        <div class="side">
-          <b-list-group style="cursor: pointer">
-            <b-list-group-item href="#">Home</b-list-group-item>
-            <b-list-group-item href="#">Profile</b-list-group-item>
-            <b-list-group-item href="#">Post</b-list-group-item>
-            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Settings</b-list-group-item>
-            <b-list-group-item @click.prevent="logout" variant="danger">Sign Out</b-list-group-item>
-          </b-list-group>
-        </div>
 
-        <div id="konten" class="list-group">
+        <navbar v-on:switching-page="switchPage" v-on:logging-out="logout"></navbar>
+
+        <div class="list-group konten" v-if="page == 'home'">
           <template v-for="(item, index) in filteredList">
             <div class="list-group-item list-group-item-action" data-toggle="modal" data-target="#contentView"
               @click="view(item._id)">
@@ -98,19 +108,26 @@
             </div>
           </template>
         </div>
-
-
-
-        <div class="footer">
-          <b-list-group style="cursor: pointer">
-            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Address</b-list-group-item>
-            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Social Media</b-list-group-item>
-            <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Copyright</b-list-group-item>
-          </b-list-group>
+        <div v-if="page == 'myPost'" class="list-group konten">
+          <template v-for="(item, index) in myList">
+            <div class="list-group-item list-group-item-action" data-toggle="modal" data-target="#contentView"
+              @click="view(item._id)">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{item.title}}</h5>
+                <small>{{item.modified}}</small>
+              </div>
+              <!-- <p class="mb-1" style="text-align: justify; cursor: pointer;">{{item.content}}</p> -->
+              <small>{{item.authorName}}</small>
+            </div>
+          </template>
         </div>
+        <div v-if="page == 'profile'" class="list-group konten">
+          <b-jumbotron header="Profile" style="padding: 32px 32px;">Tes</b-jumbotron>
+        </div>
+
+        <navbar-footer></navbar-footer>
+
       </div>
-
-
 
       <div>
 
@@ -126,11 +143,11 @@
                 </button>
               </div>
               <div class="modal-body">
-                  <p>{{contentEdit}}</p>
+                <p v-html="contentEdit"></p>
               </div>
               <div class="modal-footer">
-                <b-button data-toggle="modal" data-target="#contentEdit" class="btn btn-primary"
-                  variant="dark" @click.prevent="view2(articleId)">Edit</b-button>
+                <b-button data-toggle="modal" data-target="#contentEdit" class="btn btn-primary" variant="dark"
+                  @click.prevent="view2(articleId)">Edit</b-button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               </div>
             </div>
@@ -140,7 +157,7 @@
         <!-- Edit modal -->
         <div class="modal fade" id="contentEdit" tabindex="-1" role="dialog" aria-labelledby="contentEditLabel"
           aria-hidden="true">
-          <div class="modal-dialog" role="document">
+          <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="contentEditLabel">View Post</h5>
@@ -154,7 +171,11 @@
                 </b-form-group>
                 <b-form-group>
                   Content:
-                  <b-form-textarea label="content" v-model="contentEdit" rows="15"></b-form-textarea>
+                  <!-- <b-form-textarea label="content" v-model="contentEdit" rows="15"></b-form-textarea> -->
+                  <wysiwyg v-model="contentEdit" label="content" style="overflow: scroll; height: 300px;"></wysiwyg>
+                </b-form-group>
+                <b-form-group>
+                  Select a file: <input type="file" name="myFile">
                 </b-form-group>
               </div>
               <div class="modal-footer">
@@ -171,62 +192,69 @@
     </div>
     <div v-if="!isLoggedIn" style="display:flex; justify-content: center;">
       <div class="col-9">
-        <b-jumbotron style="background-color: #e9ecef;margin-top: 30px;" header="Mini Wordpress" lead="The difinition of writing.">
+        <b-jumbotron style="background-color: #e9ecef;margin-top: 30px;" header="Mini Wordpress"
+          lead="The difinition of writing.">
           <div class="container text-center">
             <div class="container my-4">
               <div class="row" style="display:flex; justify-content: center;">
 
-                  <div class="card mb-4" v-if="page == 'login' || (!isLoggedIn && page != 'register')">
-                    <div class="card-header text-center">Login</div>
-                    <div class="card-body">
-                      <form method="post">
-                        <div class="form-group">
-                          <label for="email">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
-                            placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
-                          <small id="emailHelp" class="form-text text-muted">
-                            We'll never share your email with anyone else.
-                          </small>
+                <div class="card mb-4" v-if="page == 'login' || (!isLoggedIn && page != 'register')">
+                  <div class="card-header text-center">Login</div>
+                  <div class="card-body">
+                    <form method="post">
+                      <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" class="form-control" id="emailLogin" aria-describedby="emailHelp"
+                          placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
+                        <small id="emailHelp" class="form-text text-muted">
+                          We'll never share your email with anyone else.
+                        </small>
+                      </div>
+                      <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="passwordLogin" placeholder="Password"
+                          v-model="loginPassword"> <!-- v-model="loginPassword" -->
+                      </div>
+                      <button type="submit" class="btn btn-primary" v-on:click.prevent="login">Submit</button>
+                      <button type="submit" class="btn btn-primary"
+                        v-on:click.prevent="page ='register'">register</button>
+                      <div class="form-group">
+                        <label for="password" style="margin-top: 20px;">Or sign in using google below</label>
+                        <div class="g-signin2" data-onsuccess="onSignIn" style="display: flex; justify-content: center">
                         </div>
-                        <div class="form-group">
-                          <label for="password">Password</label>
-                          <input type="password" class="form-control" id="password" placeholder="Password"
-                            v-model="loginPassword"> <!-- v-model="loginPassword" -->
-                        </div>
-                        <button type="submit" class="btn btn-primary" v-on:click.prevent="login">Submit</button>
-                        <button type="submit" class="btn btn-primary"
-                          v-on:click.prevent="page ='register'">register</button>
-                      </form>
-                    </div>
+                        <!-- <a href="#" onclick="signOut()">Sign out</a> -->
+                      </div>
+                    </form>
                   </div>
+                </div>
 
-                  <div class="card mb-4" v-if="page == 'register' || (!isLoggedIn && page != 'login')">
-                    <div class="card-header text-center">Register</div>
-                    <div class="card-body">
-                      <form method="post">
-                        <div class="form-group">
-                          <label for="name">Full Name</label>
-                          <input type="name" class="form-control" id="name" aria-describedby="nameHelp"
-                            placeholder="Enter name" v-model="userName"> <!-- v-model="loginEmail" -->
-                        </div>
-                        <div class="form-group">
-                          <label for="email">Email address</label>
-                          <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
-                            placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
-                          <small id="emailHelp" class="form-text text-muted">
-                            We'll never share your email with anyone else.
-                          </small>
-                        </div>
-                        <div class="form-group">
-                          <label for="password">Password</label>
-                          <input type="password" class="form-control" id="password" placeholder="Password"
-                            v-model="loginPassword"> <!-- v-model="loginPassword" -->
-                        </div>
-                        <button type="submit" class="btn btn-primary" v-on:click.prevent="register">Submit</button>
-                        <button type="submit" class="btn btn-primary" v-on:click.prevent="page ='login'">Login</button>
-                      </form>
-                    </div>
+                <div class="card mb-4" v-if="page == 'register' || (!isLoggedIn && page != 'login')">
+                  <div class="card-header text-center">Register</div>
+                  <div class="card-body">
+                    <form method="post">
+                      <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="name" class="form-control" id="name" aria-describedby="nameHelp"
+                          placeholder="Enter name" v-model="userName"> <!-- v-model="loginEmail" -->
+                      </div>
+                      <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" class="form-control" id="emailRegister" aria-describedby="emailHelp"
+                          placeholder="Enter email" v-model="loginEmail"> <!-- v-model="loginEmail" -->
+                        <small id="emailHelp" class="form-text text-muted">
+                          We'll never share your email with anyone else.
+                        </small>
+                      </div>
+                      <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="passwordRegister" placeholder="Password"
+                          v-model="loginPassword"> <!-- v-model="loginPassword" -->
+                      </div>
+                      <button type="submit" class="btn btn-primary" v-on:click.prevent="register">Submit</button>
+                      <button type="submit" class="btn btn-primary" v-on:click.prevent="page ='login'">Login</button>
+                    </form>
                   </div>
+                </div>
 
               </div>
             </div>
@@ -251,6 +279,9 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
     crossorigin="anonymous"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <!-- <script src="functions.js"></script> -->
+  <script src="/vueWysiwyg.js"></script>
   <script src="index.js"></script>
 </body>
 

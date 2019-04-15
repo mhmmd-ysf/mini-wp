@@ -27,7 +27,7 @@ html, body {
   flex-direction: column;
 }
 
-#konten {
+.konten {
   width: 60%;
   background-color: #40474e;
   cursor: pointer;

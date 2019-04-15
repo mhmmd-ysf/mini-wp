@@ -1,10 +1,69 @@
 let url = 'http://localhost:3000'
 
-new Vue({
+function onSignIn(googleUser) {
+  var profile = googleUser.getBasicProfile();
+  let id_token = googleUser.getAuthResponse().id_token
+  // console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  // console.log('Name: ' + profile.getName());
+  // console.log('Image URL: ' + profile.getImageUrl());
+  // console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  let userObj = {
+    name: profile.getName(),
+    email: profile.getEmail(),
+    password: this.loginPassword,
+    id_token: id_token
+  }
+  var xhr = new XMLHttpRequest()
+  xhr.open('POST', 'https://localhost:3000/googleSignIn')
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+  xhr.onload = function () {
+    console.log('Signed in as: ' + xhr.responseText)
+  }
+  xhr.send('idtoken=' + id_token)
+  // axios.post(url + '/googleSignIn', userObj)
+  //   .then(({ data }) => {
+  //     console.log('data')
+  //     // console.log(data)
+  //     this.loginEmail = ''
+  //     this.loginPassword = ''
+  //     swal('Berhasil register')
+  //     this.page = 'login'
+  //       let obj = {
+  //       email: userObj.email,
+  //       password: ''
+  //     }
+  //     // return axios.get(url + '/users')
+  //   })
+    // .then(({ data }) => {
+    //   data = data.filter(item => {
+    //     return item.email = userObj.email
+    //   })
+    //   window.localStorage.setItem('token', data.token)
+    //   window.localStorage.setItem('name', data.name)
+    //   window.localStorage.setItem('email', data.email)
+    //   window.localStorage.setItem('id', data.id)
+    //   this.loginEmail = ''
+    //   this.loginPassword = ''
+    //   this.userName = data.name
+    //   return swal(`Selamat datang ${data.name}!`, ' ', 'success')
+    // })
+    // .then(response => {
+    //   this.isLoggedIn = true
+    //   this.page = 'home'
+    // })
+    // .catch (err => { console.log(err); swal(err.message) })
+}
+
+function signOut() {
+  var auth2 = gapi.auth2.getAuthInstance();
+  auth2.signOut().then(function () {
+    console.log('User signed out.');
+  });
+}
+
+
+const vue = new Vue({
   el: '#app',
-  component: [
-    'article-component'
-  ],
   data: {
     articles: [],
     page: 'login',
@@ -18,7 +77,12 @@ new Vue({
     articleId: '',
     loginEmail: '',
     loginPassword: '',
-    userName: ''
+    userName: '',
+    text: '',
+    file: ''
+  },
+  components: {
+    wysiwyg: vueWysiwyg.default.component,
   },
   created() {
     // console.log('masuk')
@@ -46,19 +110,41 @@ new Vue({
       let filtered = this.articles.filter(post => {
         return post.title.toLowerCase().includes(this.search.toLowerCase()) || post.content.toLowerCase().includes(this.search.toLowerCase())
       })
-      filtered = filtered.sort((a, b) => { a.title > b.title })
-      // if (filtered.length > 5) { filtered.length = 5 }
+      if (filtered.length >= 9) { filtered.length = 9 }
+      return filtered
+    },
+    myList: function () {
+      let filtered = this.articles.filter(post => {
+        return (post.title.toLowerCase().includes(this.search.toLowerCase()) || post.content.toLowerCase().includes(this.search.toLowerCase()))
+          && window.localStorage.id === post.authorId
+      })
+      if (filtered.length >= 9) { filtered.length = 9 }
       return filtered
     }
   },
   methods: {
-    create() {
+    processFile(name, file) {
+      let tes = event.target.files[0]
+
+      console.log('tes')
+      console.log(tes)
+      console.log('name')
+      console.log(name)
+      console.log('file')
+      console.log(file)
+
+      // this.file
+      return tes
+    },
+    create(event) {
       axios.defaults.headers.common['Token'] = window.localStorage.token
       let obj = {
         title: this.title,
         content: this.content,
         modified: new Date()
       }
+      console.log('create')
+      console.log(obj)
       axios.post(url + '/articles', obj)
         .then(({ data }) => {
           data.modified = data.modified.substring(0, 19).split('T').join(' ')
@@ -76,12 +162,13 @@ new Vue({
         title: this.titleEdit,
         content: this.contentEdit
       }
+      console.log(obj)
       axios.put(url + `/articles/${input}`, obj)
         .then(({ data }) => {
           // console.log(data)
           data.modified = data.modified.substring(0, 19).split('T').join(' ')
           this.articles = this.articles.map(item => {
-            if(item._id === data._id) {
+            if (item._id === data._id) {
               item = data
             }
             return item
@@ -98,8 +185,8 @@ new Vue({
       this.articleId = input
       axios.get(url + `/articles/${input}`)
         .then(({ data }) => {
-            this.titleEdit = data.title
-            this.contentEdit = data.content
+          this.titleEdit = data.title
+          this.contentEdit = data.content
         })
         .catch(err => { console.log(err) })
     },
@@ -107,7 +194,7 @@ new Vue({
       this.articleId = input
       axios.get(url + `/articles/${input}`)
         .then(({ data }) => {
-          if(data.authorId !== window.localStorage.id) {
+          if (data.authorId !== window.localStorage.id) {
             return swal('Error: 401 Unauthorized!', `You can only edit your own article.`, 'error')
           } else {
             this.titleEdit = data.title
@@ -148,6 +235,7 @@ new Vue({
       window.localStorage.removeItem('name')
       window.localStorage.removeItem('email')
       window.localStorage.removeItem('id')
+      signOut()
       swal('Berhasil keluar')
       this.isLoggedIn = false
       this.page = 'login'
@@ -172,8 +260,7 @@ new Vue({
         })
     },
     deleteArticle: function (input) {
-      console.log(input)
-      console.log(`${url}/${input}`)
+      axios.defaults.headers.common['Token'] = window.localStorage.token
       axios.delete(`${url}/articles/${input}`)
         .then(done => {
           this.articles = this.articles.filter(item => {
@@ -200,6 +287,9 @@ new Vue({
           swal('Berhasil register')
           this.page = 'login'
         })
+    },
+    switchPage(input) {
+      this.page = input
     }
   },
   watch: {
@@ -225,6 +315,40 @@ Vue.component('article-component', {
     }
   },
   template: ``
+})
+
+Vue.component('navbar', {
+  methods: {
+    switchPage: function (input) {
+      this.$emit('switching-page', input)
+    },
+    logoutcomp: function () {
+      this.$emit('logging-out')
+    }
+  },
+  template: `
+  <div class="side">
+    <b-list-group style="cursor: pointer">
+      <b-list-group-item @click="switchPage('home')">Home</b-list-group-item>
+      <b-list-group-item @click="switchPage('profile')">Profile</b-list-group-item>
+      <b-list-group-item @click="switchPage('myPost')">Post</b-list-group-item>
+      <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Settings</b-list-group-item>
+      <b-list-group-item @click.prevent="logoutcomp" variant="danger">Sign Out</b-list-group-item>
+    </b-list-group>
+  </div>
+  `
+})
+
+Vue.component('navbar-footer', {
+  template: `
+  <div class="footer">
+    <b-list-group style="cursor: pointer">
+      <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Address</b-list-group-item>
+      <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Social Media</b-list-group-item>
+      <b-list-group-item variant="secondary" onclick="swal('Item unavailable :(')">Copyright</b-list-group-item>
+    </b-list-group>
+  </div>
+  `
 })
 
 /*

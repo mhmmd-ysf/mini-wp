@@ -64,6 +64,9 @@ class ControllerArticle {
       })
   }
   static delete(req, res) {
+    console.log('masuk delete')
+    console.log('req.params.id')
+    console.log(req.params.id)
     Article.findOneAndDelete({ _id: req.params.id })
       .then(article => {
         const response = {

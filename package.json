@@ -4,6 +4,7 @@
   "description": "-header -navigation bar -main content/body   -form add article   -list of articles footer",
   "main": "index.js",
   "dependencies": {
+    "@google-cloud/storage": "^1.2.0",
     "axios": "^0.18.0",
     "bcryptjs": "^2.4.3",
     "bootstrap": "^4.3.1",
@@ -14,6 +15,7 @@
     "jquery": "^3.3.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.5.0",
+    "multer": "^1.3.0",
     "sweetalert": "^2.1.2",
     "vue": "^2.6.10"
   },
